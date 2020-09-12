@@ -122,22 +122,14 @@ class OTAUpdater:
                     self.download_file(download_url.replace('refs/tags/', ''), download_path)
                 elif file['type'] == 'dir':
                     path = self.modulepath('next/' + file['path'].replace(self.main_dir + '/', ''))
-                    os.mkdir(path)
+                    try:
+                        os.mkdir(path)
+                    except OSError:
+                        pass
                     self.download_all_files(root_url + '/' + file['name'])
         file_list.close()
 
     def download_file(self, url, path):
-        # print('\tDownloading: ', path)
-        # CHUNK_SIZE = 1024 # bytes
-        # output_file = open('outfile', 'wb+')
-        # data = sc.recv(CHUNK_SIZE)
-        # while data:
-        #     output_file.write(data)
-        #     data = sc.recv(CHUNK_SIZE)
-        #
-        print('MEMORY: ')
-        print(os.statvfs(""))
-        print('--------------------')
         with open(path, 'wb+') as outfile:
             try:
                 response = self.http_client.get(url)
@@ -147,7 +139,10 @@ class OTAUpdater:
                     print('--------------------')
                     outfile.write(t)
             finally:
-                response.close()
+                try:
+                    response.close()
+                except:
+                    pass
                 outfile.close()
                 gc.collect()
 

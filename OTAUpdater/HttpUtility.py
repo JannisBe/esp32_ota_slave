@@ -115,6 +115,9 @@ class HttpClient:
 
             l = s.readline()
             l = l.split(None, 2)
+            print('l:')
+            print(l[0])
+            print(l[1])
             status = int(l[1])
             reason = ''
             if len(l) > 2:
