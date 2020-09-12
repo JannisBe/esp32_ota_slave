@@ -106,6 +106,8 @@ class OTAUpdater:
 
     def get_latest_version(self):
         latest_release = self.http_client.get(self.github_repo + '/commits')
+        print('json: ')
+        print(latest_release.json())
         version = latest_release.json()[0]['sha']
         latest_release.close()
         return version
