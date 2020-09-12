@@ -2,6 +2,36 @@ import usocket
 import machine
 import time
 import os
+import network
+import settings
+from src.OTAUpdater.uping import ping
+
+sta_if = network.WLAN(network.STA_IF)
+def connected_to_network(ssid=settings.WIFI_SSID, password=settings.WIFI_PASSWORD, timeout=settings.WIFI_TIMEOUT, restart=True):
+    global sta_if
+    timeout = timeout
+    i = 0
+    while not sta_if.isconnected():
+        sta_if.active(True)
+        sta_if.connect(ssid, password)
+        time.sleep(1)
+        if i == timeout:
+            print('connecting {0}'.format(i))
+            if restart:
+                machine.reset()
+            else:
+                return False
+    try:
+        snd, recv = ping('google.com')
+        if recv < 1:
+            raise Exception("No Internet")
+        return True
+    except OSError as e:
+        if restart:
+            machine.reset()
+        else:
+            print(e)
+            return False
 
 class Response:
 
@@ -76,7 +106,14 @@ class HttpClient:
             port = int(port)
 
         print('addrinfo: {0} - {1}'.format(host, port))
-        ai = usocket.getaddrinfo(host, port, 0, usocket.SOCK_STREAM)
+        ai = False
+        while not ai:
+            try:
+                ai = usocket.getaddrinfo(host, port, 0, usocket.SOCK_STREAM)
+            except OSError as e:
+                print(e)
+                ai = False
+                connected_to_network(settings.WIFI_SSID, settings.WIFI_PASSWORD, settings.WIFI_TIMEOUT, restart=False)
         try:
             ai = ai[0]
 

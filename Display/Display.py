@@ -2,6 +2,15 @@ from machine import Pin, I2C
 from . import SSD1306
 import time
 import machine
+import logging
+
+###############
+### LOGGING ###
+###############
+logging.basicConfig(filename='main.log',
+                            format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+                            level=logging.DEBUG)
+
 
 class Display:
     _instance = None
@@ -30,14 +39,16 @@ class Display:
             self.current_x = 0
             self.reset()
 
-    def log(self, message, overwrite=False, debug=True):
+    def log(self, message, overwrite=False, debug=True, nodisplay=False):
         if len(message) <= self.max_letters:
             if debug:
-                print('info: {0}'.format(message))
-            self.oled.text(message, 0, self.current_x)
+                logging.info('{0}'.format(message))
+                print(message)
+            if not nodisplay:
+                self.oled.text(message, 0, self.current_x)
         else:
-            print('string too long')
-            print('info: {0}'.format(message))
+            logging.info('{0}'.format(message))
+            print(message)
             chunks = [message[i:i+self.max_letters] for i in range(0, len(message), self.max_letters)]
             for chunk in chunks:
                 self.log(chunk, debug=False)

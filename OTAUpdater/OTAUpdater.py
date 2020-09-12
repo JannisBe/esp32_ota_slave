@@ -10,20 +10,21 @@ import network
 
 class OTAUpdater:
 
-    def __init__(self, github_repo, module='', main_dir='src', headers={}, skipped_files=[], wifi_timeout=10):
+    def __init__(self, github_repo, module='', main_dir='src', headers={}, skipped_files=[], wifi_timeout=10, logger=None):
         self.http_client = HttpClient(headers=headers)
         self.github_repo = github_repo.rstrip('/').replace('https://github.com', 'https://api.github.com/repos')
         self.main_dir = main_dir
         self.module = module.rstrip('/')
         self.skipped_files = skipped_files
         self.wifi_timeout = wifi_timeout
+        self.logger = logger
 
     def check_for_update_to_install_during_next_reboot(self):
         current_version = self.get_version(self.modulepath(self.main_dir))
         latest_version = self.get_latest_version()
 
         if latest_version > current_version:
-            print('New version available')
+            self.logger.log('New version available', nodisplay=True)
             try:
                 os.mkdir(self.modulepath('next'))
             except:
@@ -39,10 +40,10 @@ class OTAUpdater:
         if 'next' in os.listdir(self.module):
             if '.version_on_reboot' in os.listdir(self.modulepath('next')):
                 latest_version = self.get_version(self.modulepath('next'), '.version_on_reboot')
-                print('New update found: ', latest_version)
+                self.logger.log('New update found: {0}'.format(latest_version), nodisplay=True)
                 self._download_and_install_update(latest_version)
         else:
-            print('No new updates found...')
+            self.logger.log('No new updates found...', nodisplay=True)
 
     def _download_and_install_update(self, latest_version):
 
@@ -51,32 +52,27 @@ class OTAUpdater:
         self.rmtree(self.modulepath(self.main_dir))
         os.rename(self.modulepath('next/.version_on_reboot'), self.modulepath('next/.version'))
         os.rename(self.modulepath('next'), self.modulepath(self.main_dir))
-        print('Update installed (', latest_version, '), will reboot now')
+        self.logger.log('Update installed ({0}), will reboot now'.format(latest_version), nodisplay=True)
         machine.reset()
 
     def apply_pending_updates_if_available(self):
         if 'next' in os.listdir(self.module):
             if '.version' in os.listdir(self.modulepath('next')):
                 pending_update_version = self.get_version(self.modulepath('next'))
-                print('Pending update found: ', pending_update_version)
+                self.logger.log('Pending update found: {0}'.format(pending_update_version), nodisplay=True)
                 self.rmtree(self.modulepath(self.main_dir))
                 os.rename(self.modulepath('next'), self.modulepath(self.main_dir))
-                print('Update applied (', pending_update_version, '), ready to rock and roll')
             else:
-                print('Corrupt pending update found, discarding...')
+                self.logger.log('Corrupt pending update found, discarding...', nodisplay=True)
                 self.rmtree(self.modulepath('next'))
         else:
-            print('No pending update found')
+            self.logger.log('No pending update found', nodisplay=True)
 
     def download_updates_if_available(self):
         current_version = self.get_version(self.modulepath(self.main_dir))
         latest_version = self.get_latest_version()
 
-        print('Checking version... ')
-        print('\tCurrent version: ', current_version)
-        print('\tLatest version: ', latest_version)
         if latest_version > current_version:
-            print('Updating...')
             os.mkdir(self.modulepath('next'))
             self.download_all_files(self.github_repo + '/contents/')
             with open(self.modulepath('next/.version'), 'w') as versionfile:
@@ -106,21 +102,19 @@ class OTAUpdater:
 
     def get_latest_version(self):
         latest_release = self.http_client.get(self.github_repo + '/commits')
-        print('json: ')
-        print(latest_release.json())
         version = latest_release.json()[0]['sha']
         latest_release.close()
         return version
 
     def download_all_files(self, root_url):
         file_list = self.http_client.get(root_url)
-        print("{0}".format(root_url))
+        self.logger.log("{0}".format(root_url), nodisplay=True)
         for file in file_list.json():
             if file['name'] not in self.skipped_files:
                 if file['type'] == 'file':
                     download_url = file['download_url']
                     download_path = self.modulepath('next/' + file['path'].replace(self.main_dir + '/', ''))
-                    print('download_path: {0}'.format(download_path))
+                    self.logger.log('download_path: {0}'.format(download_path), nodisplay=True)
                     self.download_file(download_url.replace('refs/tags/', ''), download_path)
                 elif file['type'] == 'dir':
                     path = self.modulepath('next/' + file['path'].replace(self.main_dir + '/', ''))
@@ -128,7 +122,10 @@ class OTAUpdater:
                         os.mkdir(path)
                     except OSError:
                         pass
-                    self.download_all_files(root_url + '/' + file['name'])
+                    if root_url[-1] == '/':
+                        self.download_all_files(root_url + file['name'])
+                    else:
+                        self.download_all_files(root_url + '/' + file['name'])
         file_list.close()
 
     def download_file(self, url, path):
@@ -136,9 +133,6 @@ class OTAUpdater:
             try:
                 response = self.http_client.get(url)
                 for t in response.text:
-                    print('MEMORY: ')
-                    print(os.statvfs(""))
-                    print('--------------------')
                     outfile.write(t)
             finally:
                 try:
