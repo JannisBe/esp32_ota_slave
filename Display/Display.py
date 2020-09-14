@@ -39,7 +39,7 @@ class Display:
             self.current_x = 0
             self.reset()
 
-    def log(self, message, overwrite=False, debug=True, nodisplay=False):
+    def log(self, message, overwrite=False, debug=False, nodisplay=False):
         if len(message) <= self.max_letters:
             if debug:
                 logging.info('{0}'.format(message))
@@ -47,7 +47,8 @@ class Display:
             if not nodisplay:
                 self.oled.text(message, 0, self.current_x)
         else:
-            logging.info('{0}'.format(message))
+            if debug:
+                logging.info('{0}'.format(message))
             print(message)
             chunks = [message[i:i+self.max_letters] for i in range(0, len(message), self.max_letters)]
             for chunk in chunks:
