@@ -119,7 +119,7 @@ class HttpClient:
                 ai = False
                 connected_to_network(settings.WIFI_SSID, settings.WIFI_PASSWORD, settings.WIFI_TIMEOUT, restart=False)
                 if c > 10:
-                    machine.restart()
+                    machine.reset()
         try:
             ai = ai[0]
 
