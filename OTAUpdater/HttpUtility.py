@@ -26,7 +26,7 @@ def connected_to_network(ssid=settings.WIFI_SSID, password=settings.WIFI_PASSWOR
         if recv < 1:
             raise Exception("No Internet")
         return True
-    except OSError as e:
+    except Exception as e:
         if restart:
             machine.reset()
         else:
@@ -113,6 +113,8 @@ class HttpClient:
                 ai = usocket.getaddrinfo(host, port, 0, usocket.SOCK_STREAM)
             except OSError as e:
                 c += 1
+                print('OSError -- in HttpUtility')
+                print('{0} - {1}'.format(host, port))
                 print(e)
                 ai = False
                 connected_to_network(settings.WIFI_SSID, settings.WIFI_PASSWORD, settings.WIFI_TIMEOUT, restart=False)
