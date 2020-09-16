@@ -106,7 +106,7 @@ def run():
 
     # Loop
     while True:
-        while not connected_to_network(timeout=20, restart=True):
+        while not connected_to_network(timeout=200, restart=True):
             time.sleep(1)
         #SoilMoisture
         for i, sensor in enumerate(soilmoisturesensors):
