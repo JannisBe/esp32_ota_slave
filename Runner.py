@@ -7,6 +7,7 @@ from settings import *
 from .package_settings import *
 
 from src.OTAUpdater.OTAUpdater import OTAUpdater
+from src.OTAUpdater.HttpUtility import connected_to_network
 from .Display.display import display
 from .Waterpump import Waterpump
 from .SoilMoisture import SoilMoisture
@@ -77,7 +78,8 @@ def run():
         display.signalize(n=5)
         time.sleep(5)
         machine.reset()
-    except:
+    except Exception as e:
+        print(e)
         display.error()
 
 
@@ -113,6 +115,8 @@ def run():
     # Loop
     while True:
         display.reset()
+        while not connected_to_network(restart=False):
+            time.sleep(1)
         #SoilMoisture
         for i, sensor in enumerate(soilmoisturesensors):
             channel = SOILMOISTURECHANNEL + str(i)
@@ -136,4 +140,4 @@ def run():
             str(pumpval)
         ))
         client.check_msg()
-        time.sleep(5)
+        time.sleep(20)

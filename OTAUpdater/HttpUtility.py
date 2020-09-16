@@ -107,13 +107,17 @@ class HttpClient:
 
         print('addrinfo: {0} - {1}'.format(host, port))
         ai = False
+        c = 0
         while not ai:
             try:
                 ai = usocket.getaddrinfo(host, port, 0, usocket.SOCK_STREAM)
             except OSError as e:
+                c += 1
                 print(e)
                 ai = False
                 connected_to_network(settings.WIFI_SSID, settings.WIFI_PASSWORD, settings.WIFI_TIMEOUT, restart=False)
+                if c > 10:
+                    machine.restart()
         try:
             ai = ai[0]
 
