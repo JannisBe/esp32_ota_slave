@@ -125,6 +125,7 @@ class HttpClient:
             ai = ai[0]
 
             s = usocket.socket(ai[0], ai[1])
+            s.settimeout(20)
         except:
             print("No internet...")
             print("Restart please...")
