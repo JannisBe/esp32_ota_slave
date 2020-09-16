@@ -5,6 +5,7 @@ import os
 import network
 import settings
 from src.OTAUpdater.uping import ping
+import logging
 
 sta_if = network.WLAN(network.STA_IF)
 def connected_to_network(ssid=settings.WIFI_SSID, password=settings.WIFI_PASSWORD, timeout=settings.WIFI_TIMEOUT, restart=True):
@@ -39,7 +40,7 @@ class Response:
         self.raw = f
         self.encoding = 'utf-8'
         self._cached = None
-        self.chunk_size = 4096
+        self.chunk_size = 2048
 
     def close(self):
         if self.raw:
@@ -47,11 +48,11 @@ class Response:
             self.raw = None
         self._cached = None
 
-    @property
     def content_chunked(self):
         try:
             data = self.raw.read(self.chunk_size)
             while data:
+                logging.debug('yielding data...')
                 yield data
                 data = self.raw.read(self.chunk_size)
         finally:
@@ -70,7 +71,7 @@ class Response:
 
     @property
     def text(self):
-        for chunk in self.content_chunked:
+        for chunk in self.content_chunked():
             yield str(chunk, self.encoding)
 
     def json(self):
@@ -171,8 +172,10 @@ class HttpClient:
                     break
                 if l.startswith(b'Transfer-Encoding:'):
                     if b'chunked' in l:
+                        logging.error('ERROR in HttpUtility -> ValueError')
                         raise ValueError('Unsupported ' + l)
                 elif l.startswith(b'Location:') and not 200 <= status <= 299:
+                    logging.error('ERROR in HttpUtility -> Unsupported')
                     raise NotImplementedError('Redirects not yet supported')
         except OSError:
             s.close()

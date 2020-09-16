@@ -46,8 +46,6 @@ class OTAUpdater:
             logging.info('No new updates found...')
 
     def _download_and_install_update(self, latest_version):
-
-
         self.download_all_files(self.github_repo + '/contents/')
         self.rmtree(self.modulepath(self.main_dir))
         os.rename(self.modulepath('next/.version_on_reboot'), self.modulepath('next/.version'))
@@ -110,6 +108,7 @@ class OTAUpdater:
         file_list = self.http_client.get(root_url)
         logging.info("{0}".format(root_url))
         for file in file_list.json():
+            logging.info('downloading file {0}'.format(file['name']))
             if file['name'] not in self.skipped_files:
                 if file['type'] == 'file':
                     download_url = file['download_url']
@@ -126,6 +125,7 @@ class OTAUpdater:
                         self.download_all_files(root_url + file['name'])
                     else:
                         self.download_all_files(root_url + '/' + file['name'])
+        logging.info('files downloaded...')
         file_list.close()
 
     def download_file(self, url, path):
@@ -133,6 +133,7 @@ class OTAUpdater:
             try:
                 response = self.http_client.get(url)
                 for t in response.text:
+                    logging.debug('t : {0}'.format(t))
                     outfile.write(t)
             finally:
                 try:
