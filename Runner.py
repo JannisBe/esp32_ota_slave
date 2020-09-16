@@ -8,7 +8,6 @@ from .package_settings import *
 
 from src.OTAUpdater.OTAUpdater import OTAUpdater
 from src.OTAUpdater.HttpUtility import connected_to_network
-from .Display.Display import display
 from .Waterpump import Waterpump
 from .SoilMoisture import SoilMoisture
 from .MQTT.mqtt import MQTTClient, MQTTException
@@ -54,13 +53,9 @@ def run():
         Main Routine to execute
     """
 
-    display.reset()
-    display.log('------------')
-    display.log('starting setup')
-    display.log('------------')
-    display.signalize(n=5)
-    time.sleep(1)
-    display.reset()
+    logging.info('------------')
+    logging.info('starting setup')
+    logging.info('------------')
 
     #SET INITIAL TIME
     rtc = machine.RTC()
@@ -73,15 +68,12 @@ def run():
         client.settimeout = settimeout
         client.connect()
     except MQTTException:
-        display.reset()
-        display.log('SERVER NOT RESPONDING')
-        display.log('RESET')
-        display.signalize(n=5)
+        logging.info('SERVER NOT RESPONDING')
+        logging.info('RESET')
         time.sleep(5)
         machine.reset()
     except Exception as e:
-        print(e)
-        display.error()
+        logging.info(e)
 
 
     #Initialize Waterpumps
@@ -101,11 +93,9 @@ def run():
             'last_value': False
         })
 
-    display.reset()
-    display.log('------------')
-    display.log('starting loop')
-    display.log('------------')
-    display.signalize(n=5)
+    logging.info('------------')
+    logging.info('starting loop')
+    logging.info('------------')
     time.sleep(1)
 
     #Waterpump
@@ -115,7 +105,6 @@ def run():
 
     # Loop
     while True:
-        display.reset()
         while not connected_to_network(timeout=20, restart=True):
             time.sleep(1)
         #SoilMoisture
@@ -128,14 +117,14 @@ def run():
             except:
                 pass
             client.publish(channel, str(val))
-            display.log('s{0} {1}m ago: {2}'.format(
+            logging.info('s{0} {1}m ago: {2}'.format(
                 str(i),
                 str(diff_in_minutes(sensor['last_checked'])),
                 str(sensor['last_value'])
             ))
 
         pump, pumpi, pumpval = get_latest_waterpump_activation()
-        display.log('w{0} {1}m ago: {2}'.format(
+        logging.info('w{0} {1}m ago: {2}'.format(
             str(pumpi),
             str(diff_in_minutes(pump)),
             str(pumpval)

@@ -7,24 +7,24 @@ import machine
 from .HttpUtility import Response, HttpClient
 import time
 import network
+import logging
 
 class OTAUpdater:
 
-    def __init__(self, github_repo, module='', main_dir='src', headers={}, skipped_files=[], wifi_timeout=10, logger=None):
+    def __init__(self, github_repo, module='', main_dir='src', headers={}, skipped_files=[], wifi_timeout=10,):
         self.http_client = HttpClient(headers=headers)
         self.github_repo = github_repo.rstrip('/').replace('https://github.com', 'https://api.github.com/repos')
         self.main_dir = main_dir
         self.module = module.rstrip('/')
         self.skipped_files = skipped_files
         self.wifi_timeout = wifi_timeout
-        self.logger = logger
 
     def check_for_update_to_install_during_next_reboot(self):
         current_version = self.get_version(self.modulepath(self.main_dir))
         latest_version = self.get_latest_version()
 
         if latest_version > current_version:
-            self.logger.log('New version available', nodisplay=True)
+            logging.info('New version available')
             try:
                 os.mkdir(self.modulepath('next'))
             except:
@@ -40,10 +40,10 @@ class OTAUpdater:
         if 'next' in os.listdir(self.module):
             if '.version_on_reboot' in os.listdir(self.modulepath('next')):
                 latest_version = self.get_version(self.modulepath('next'), '.version_on_reboot')
-                self.logger.log('New update found: {0}'.format(latest_version), nodisplay=True)
+                logging.info('New update found: {0}'.format(latest_version))
                 self._download_and_install_update(latest_version)
         else:
-            self.logger.log('No new updates found...', nodisplay=True)
+            logging.info('No new updates found...')
 
     def _download_and_install_update(self, latest_version):
 
@@ -52,21 +52,21 @@ class OTAUpdater:
         self.rmtree(self.modulepath(self.main_dir))
         os.rename(self.modulepath('next/.version_on_reboot'), self.modulepath('next/.version'))
         os.rename(self.modulepath('next'), self.modulepath(self.main_dir))
-        self.logger.log('Update installed ({0}), will reboot now'.format(latest_version), nodisplay=True)
+        logging.info('Update installed ({0}), will reboot now'.format(latest_version))
         machine.reset()
 
     def apply_pending_updates_if_available(self):
         if 'next' in os.listdir(self.module):
             if '.version' in os.listdir(self.modulepath('next')):
                 pending_update_version = self.get_version(self.modulepath('next'))
-                self.logger.log('Pending update found: {0}'.format(pending_update_version), nodisplay=True)
+                logging.info('Pending update found: {0}'.format(pending_update_version))
                 self.rmtree(self.modulepath(self.main_dir))
                 os.rename(self.modulepath('next'), self.modulepath(self.main_dir))
             else:
-                self.logger.log('Corrupt pending update found, discarding...', nodisplay=True)
+                logging.info('Corrupt pending update found, discarding...')
                 self.rmtree(self.modulepath('next'))
         else:
-            self.logger.log('No pending update found', nodisplay=True)
+            logging.info('No pending update found')
 
     def download_updates_if_available(self):
         current_version = self.get_version(self.modulepath(self.main_dir))
@@ -108,13 +108,13 @@ class OTAUpdater:
 
     def download_all_files(self, root_url):
         file_list = self.http_client.get(root_url)
-        self.logger.log("{0}".format(root_url), nodisplay=True)
+        logging.info("{0}".format(root_url))
         for file in file_list.json():
             if file['name'] not in self.skipped_files:
                 if file['type'] == 'file':
                     download_url = file['download_url']
                     download_path = self.modulepath('next/' + file['path'].replace(self.main_dir + '/', ''))
-                    self.logger.log('download_path: {0}'.format(download_path), nodisplay=True)
+                    logging.info('download_path: {0}'.format(download_path))
                     self.download_file(download_url.replace('refs/tags/', ''), download_path)
                 elif file['type'] == 'dir':
                     path = self.modulepath('next/' + file['path'].replace(self.main_dir + '/', ''))
