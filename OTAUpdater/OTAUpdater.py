@@ -133,10 +133,10 @@ class OTAUpdater:
             try:
                 response = self.http_client.get(url)
                 t = response.text
-                while t:
-                    logging.debug('t : {0}'.format(t))
-                    outfile.write(t)
-                    t = response.text
+                #while t:
+                #    logging.debug('t : {0}'.format(t))
+                outfile.write(t)
+                #    t = response.text
             finally:
                 try:
                     response.close()

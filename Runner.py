@@ -2,6 +2,7 @@ from network import WLAN
 import machine
 import time
 import utime
+import logging
 
 from settings import *
 from .package_settings import *

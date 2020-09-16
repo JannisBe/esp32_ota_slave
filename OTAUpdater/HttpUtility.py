@@ -71,8 +71,9 @@ class Response:
 
     @property
     def text(self):
-        for chunk in self.content_chunked():
-            yield str(chunk, self.encoding)
+        return str(self.content, self.encoding)
+#        for chunk in self.content_chunked():
+#            yield str(chunk, self.encoding)
 
     def json(self):
         import ujson
@@ -125,7 +126,7 @@ class HttpClient:
             ai = ai[0]
 
             s = usocket.socket(ai[0], ai[1])
-            s.settimeout(20)
+            s.settimeout(50)
         except:
             print("No internet...")
             print("Restart please...")
