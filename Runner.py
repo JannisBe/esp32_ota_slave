@@ -8,7 +8,7 @@ from .package_settings import *
 
 from src.OTAUpdater.OTAUpdater import OTAUpdater
 from src.OTAUpdater.HttpUtility import connected_to_network
-from .Display.display import display
+from .Display.Display import display
 from .Waterpump import Waterpump
 from .SoilMoisture import SoilMoisture
 from .MQTT.mqtt import MQTTClient, MQTTException

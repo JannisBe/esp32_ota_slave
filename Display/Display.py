@@ -3,7 +3,6 @@ from . import SSD1306
 import time
 import machine
 import logging
-import settings
 
 ###############
 ### LOGGING ###
@@ -18,7 +17,7 @@ class Display:
 
     def __init__(self, width = 128, height = 64, scl_pin = 15, sda_pin = 4, physical_available=False):
         # ESP32 Pin assignment
-        self.physical_available=physical_available
+        self.physical_available = physical_available
         if physical_available:
             rst = Pin(16, Pin.OUT)
             rst.value(1)
@@ -96,4 +95,4 @@ class Display:
                                 cls, *args, **kwargs)
         return cls._instance
 
-display = Display(physical_available=settings.DISPLAY_AVAILABLE)
+display = Display()
