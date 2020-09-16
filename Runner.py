@@ -141,4 +141,4 @@ def run():
             str(pumpval)
         ))
         client.check_msg()
-        time.sleep(20)
+        machine.deepsleep(15000) # 20sec
