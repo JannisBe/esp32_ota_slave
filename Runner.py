@@ -32,6 +32,7 @@ def waterpump_callback(topic, msg):
     waterpumps[n]['obj'].exec(int(msg))
     waterpumps[n]['last_value'] = int(msg)
     waterpumps[n]['last_activated'] = utime.localtime(utime.time())
+    return
 
 def get_latest_waterpump_activation():
     global waterpumps
@@ -115,7 +116,7 @@ def run():
     # Loop
     while True:
         display.reset()
-        while not connected_to_network(restart=False):
+        while not connected_to_network(timeout=20, restart=True):
             time.sleep(1)
         #SoilMoisture
         for i, sensor in enumerate(soilmoisturesensors):
