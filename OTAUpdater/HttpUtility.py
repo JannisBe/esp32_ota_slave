@@ -52,7 +52,7 @@ class Response:
         try:
             data = self.raw.read(self.chunk_size)
             while data:
-                logging.debug('yielding data...')
+                logging.debug('yielding data: {0}'.format(data))
                 yield data
                 data = self.raw.read(self.chunk_size)
         finally:
@@ -124,7 +124,7 @@ class HttpClient:
         try:
             ai = ai[0]
 
-            s = usocket.socket(ai[0], ai[1], ai[2])
+            s = usocket.socket(ai[0], ai[1])
         except:
             print("No internet...")
             print("Restart please...")
