@@ -1,6 +1,6 @@
 from machine import Pin, ADC
 import time
-import logger
+import logging
 
 class SoilMoisture():
 
@@ -11,7 +11,7 @@ class SoilMoisture():
 
     def test(self, times=60):
         for i in range(times):
-            logger.info(self.adc.read())
+            logging.info(self.adc.read())
             time.sleep(1)
 
     def exec(self):

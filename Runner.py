@@ -74,7 +74,7 @@ def run():
         time.sleep(5)
         machine.reset()
     except Exception as e:
-        logging.info(e)
+        logging.info(str(e))
 
 
     #Initialize Waterpumps
@@ -106,41 +106,41 @@ def run():
 
     # Loop
     while True:
-        logger.info("1")
+        logging.info("1")
         while not connected_to_network(timeout=200, restart=True):
-            logger.info("2")
+            logging.info("2")
             time.sleep(1)
         #SoilMoisture
-        logger.info("3 0")
+        logging.info("3 0")
         for i, sensor in enumerate(soilmoisturesensors):
-            logger.info("3 1 {0}".format(str(i)))
+            logging.info("3 1 {0}".format(str(i)))
             channel = SOILMOISTURECHANNEL + str(i)
-            logger.info("3 2 {0}".format(str(i)))
+            logging.info("3 2 {0}".format(str(i)))
             val = sensor['obj'].exec()
-            logger.info("3 3 {0}".format(str(i)))
+            logging.info("3 3 {0}".format(str(i)))
             try:
                 sensor['last_value'] = int(val)
                 sensor['last_checked'] = utime.localtime(utime.time())
             except:
                 pass
-            logger.info("3 4 {0}".format(str(i)))
+            logging.info("3 4 {0}".format(str(i)))
             client.publish(channel, str(val))
-            logger.info("3 5 {0}".format(str(i)))
+            logging.info("3 5 {0}".format(str(i)))
             logging.info('s{0} {1}m ago: {2}'.format(
                 str(i),
                 str(diff_in_minutes(sensor['last_checked'])),
                 str(sensor['last_value'])
             ))
 
-        logger.info("4")
+        logging.info("4")
         pump, pumpi, pumpval = get_latest_waterpump_activation()
-        logger.info("5")
+        logging.info("5")
         logging.info('w{0} {1}m ago: {2}'.format(
             str(pumpi),
             str(diff_in_minutes(pump)),
             str(pumpval)
         ))
-        logger.info("6")
+        logging.info("6")
         client.check_msg()
-        logger.info("7")
+        logging.info("7")
         machine.deepsleep(15000) # 20sec
