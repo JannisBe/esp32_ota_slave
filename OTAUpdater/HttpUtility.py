@@ -17,7 +17,7 @@ def connected_to_network(ssid=settings.WIFI_SSID, password=settings.WIFI_PASSWOR
         sta_if.connect(ssid, password)
         time.sleep(1)
         if i == timeout:
-            logger.info('connecting {0}'.format(i))
+            logging.info('connecting {0}'.format(i))
             if restart:
                 machine.reset()
             else:
@@ -31,7 +31,7 @@ def connected_to_network(ssid=settings.WIFI_SSID, password=settings.WIFI_PASSWOR
         if restart:
             machine.reset()
         else:
-            logger.info(e)
+            logging.info(str(e))
             return False
 
 class Response:
@@ -107,7 +107,7 @@ class HttpClient:
             host, port = host.split(':', 1)
             port = int(port)
 
-        logger.info('addrinfo: {0} - {1}'.format(host, port))
+        logging.info('addrinfo: {0} - {1}'.format(host, port))
         ai = False
         c = 0
         while not ai:
@@ -115,9 +115,9 @@ class HttpClient:
                 ai = usocket.getaddrinfo(host, port, 0, usocket.SOCK_STREAM)
             except OSError as e:
                 c += 1
-                logger.info('OSError -- in HttpUtility')
-                logger.info('{0} - {1}'.format(host, port))
-                logger.info(e)
+                logging.info('OSError -- in HttpUtility')
+                logging.info('{0} - {1}'.format(host, port))
+                logging.info(str(e))
                 ai = False
                 connected_to_network(settings.WIFI_SSID, settings.WIFI_PASSWORD, settings.WIFI_TIMEOUT, restart=False)
                 if c > 10:
@@ -128,8 +128,8 @@ class HttpClient:
             s = usocket.socket(ai[0], ai[1])
             s.settimeout(50)
         except:
-            logger.info("No internet...")
-            logger.info("Restart please...")
+            logging.info("No internet...")
+            logging.info("Restart please...")
             time.sleep(5)
             machine.reset()
         try:
@@ -161,9 +161,9 @@ class HttpClient:
 
             l = s.readline()
             l = l.split(None, 2)
-            logger.info('l:')
-            logger.info(l[0])
-            logger.info(l[1])
+            logging.info('l:')
+            logging.info(l[0])
+            logging.info(l[1])
             status = int(l[1])
             reason = ''
             if len(l) > 2:
