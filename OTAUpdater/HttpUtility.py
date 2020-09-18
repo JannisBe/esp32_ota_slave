@@ -31,7 +31,7 @@ def connected_to_network(ssid=settings.WIFI_SSID, password=settings.WIFI_PASSWOR
         if restart:
             machine.reset()
         else:
-            logging.info(str(e))
+            logging.error(str(e))
             return False
 
 class Response:
@@ -117,7 +117,7 @@ class HttpClient:
                 c += 1
                 logging.info('OSError -- in HttpUtility')
                 logging.info('{0} - {1}'.format(host, port))
-                logging.info(str(e))
+                logging.error(str(e))
                 ai = False
                 connected_to_network(settings.WIFI_SSID, settings.WIFI_PASSWORD, settings.WIFI_TIMEOUT, restart=False)
                 if c > 10:

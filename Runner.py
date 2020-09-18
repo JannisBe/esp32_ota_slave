@@ -74,7 +74,7 @@ def run():
         time.sleep(5)
         machine.reset()
     except Exception as e:
-        logging.info(str(e))
+        logging.error(str(e))
 
 
     #Initialize Waterpumps
@@ -143,4 +143,4 @@ def run():
         logging.info("6")
         client.check_msg()
         logging.info("7")
-        machine.deepsleep(15000) # 20sec
+        time.sleep(2) # 20sec
